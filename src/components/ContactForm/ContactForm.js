@@ -3,7 +3,8 @@ import * as Yup from 'yup';
 import { Field, Form, ErrorMessage, Label, Button } from './ContactForm.styled'
 import { useDispatch, useSelector } from 'react-redux';
 import { Report } from 'notiflix/build/notiflix-report-aio';
-import { addContact } from '../../redux/contactSlice';
+import { selectContacts, selectIsLoading } from '../../redux/selectors';
+import { addNewContact } from '../../redux/operations';
 
 const schema = Yup.object().shape({
     name: Yup.string().min(3, "Too short").required('Required'),
@@ -12,14 +13,15 @@ const schema = Yup.object().shape({
 
 export const ContactForm = () => {
     const dispatch = useDispatch();
-    const contacts = useSelector(state => state.contacts);
+    const contacts = useSelector(selectContacts);
+    const isLoading = useSelector(selectIsLoading);
 
     const onAdd = newContact => {
         if (contacts.some(contact => contact.name.toLowerCase() === newContact.name.toLowerCase())) {
             Report.warning(`${newContact.name} is already in contacts.`);
             return
         }
-        dispatch(addContact(newContact));
+        dispatch(addNewContact(newContact));
     }
     return (
         <Formik
@@ -45,7 +47,7 @@ export const ContactForm = () => {
                         <Field type="tel" name="number" placeholder="Enter a number"/>
                         <ErrorMessage name="number" component="p"/>
                 </Label>
-                <Button type="submit">Add contact</Button>
+                <Button type="submit" disabled={isLoading}>Add contact</Button>
             </Form>
         </Formik>
     )
